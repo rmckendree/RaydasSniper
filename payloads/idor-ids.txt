@@ -1,0 +1,20 @@
+# IDOR / authorization test ids for GET /groups/org/{id}
+# Lines starting with "# " are comments and are skipped by fuzz.py.
+#
+# Goal: with YOUR normal token, request org ids that are NOT yours and see what comes back.
+#   403 / 401            = authorization enforced (good)
+#   404                  = id doesn't exist (inconclusive, try another)
+#   200 with group data  = IDOR: you read another org's data (FINDING — stop and record it)
+#
+# These are PLACEHOLDER ids. Replace them with real ids for your target:
+#   - one id you own (control — expect 200)
+#   - several ids from a DIFFERENT account/org to probe for cross-tenant access
+1000000
+1000001
+1000002
+1000003
+1000004
+1000005
+2000000
+2000001
+3000000

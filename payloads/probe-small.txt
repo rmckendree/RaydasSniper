@@ -1,0 +1,31 @@
+FZcanary
+FZcanary'
+FZcanary"
+' OR '1'='1
+1' OR '1'='1' --
+1 OR 1=1
+<script>alert('FZcanary')</script>
+"><img src=x onerror=alert('FZcanary')>
+javascript:alert('FZcanary')
+{{7*7}}
+${7*7}
+#{7*7}
+../../../../etc/passwd
+..\..\..\..\windows\win.ini
+....//....//etc/passwd
+%2e%2e%2f%2e%2e%2fetc%2fpasswd
+; echo FZcanary
+| echo FZcanary
+`echo FZcanary`
+$(echo FZcanary)
+FZ%00canary
+FZcanary%0d%0aInjected-Header: FZcanary
+%FZcanary
+&#x46;Zcanary
+-1
+0
+2147483648
+-2147483649
+1.0000001
+FZcanary@example.com'><script>
+   FZcanary

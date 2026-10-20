@@ -1,0 +1,27 @@
+{
+  "info": { "name": "api-capture sample", "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json" },
+  "variable": [ { "key": "baseUrl", "value": "https://api.example.com" } ],
+  "item": [
+    {
+      "name": "List Requirements",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "Accept", "value": "application/json" } ],
+        "auth": { "type": "bearer", "bearer": [ { "key": "token", "value": "{{token}}" } ] },
+        "url": {
+          "raw": "{{baseUrl}}/ta/requirements?status=active&page=1",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "ta", "requirements" ],
+          "query": [ { "key": "status", "value": "active" }, { "key": "page", "value": "1" } ]
+        }
+      }
+    },
+    {
+      "name": "Get Member",
+      "request": {
+        "method": "GET",
+        "url": { "raw": "{{baseUrl}}/ta/members?search=smith", "host": ["{{baseUrl}}"], "path": ["ta","members"], "query": [ {"key":"search","value":"smith"} ] }
+      }
+    }
+  ]
+}

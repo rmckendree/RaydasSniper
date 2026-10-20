@@ -1,0 +1,11 @@
+# LMS fuzz tool — Python dependencies
+#
+# This tool uses ONLY the Python standard library, so there is nothing to pip install.
+# Requirement: Python 3.8+ (developed/tested on 3.12).
+#
+# Standard-library modules used by bin/fuzz.py (all built in, listed for reference only):
+#   argparse, csv, datetime, html, json, os, re, ssl, sys, time, urllib
+#
+# There are intentionally no third-party packages below. If you add any later
+# (e.g. requests, httpx), pin them here, one per line, e.g.:
+#   requests==2.32.3

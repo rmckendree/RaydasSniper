@@ -1,0 +1,22 @@
+# IDOR / BOLA test for POST /enrollments/search  — fuzz the json field: memberIds[]
+# Lines starting with "# " (or a lone #) are comments and are skipped.
+#
+# Each payload becomes memberIds:[<id>]. Read the result as:
+#   data:[] (empty body)        = no records returned for that member (safe / not yours)
+#   data:[ ...records... ]      = you got that member's records
+#        -> if that member belongs to ANOTHER account, that is an IDOR/BOLA finding. Stop & record.
+#   403                         = blocked (WAF) — usually only on non-numeric junk
+#
+# These are PLACEHOLDER ids. Replace them with real ids for your target:
+#   - one member id you own (control — expect data)
+#   - several member ids from a DIFFERENT account to probe for cross-tenant access
+1000000
+1000001
+1000002
+1000003
+1000004
+2000000
+2000001
+3000000
+1
+999999999

