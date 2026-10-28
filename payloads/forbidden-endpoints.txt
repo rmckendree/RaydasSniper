@@ -1,0 +1,56 @@
+# ============================================================================
+# BFLA — Broken Function-Level Authorization  (non-destructive)
+# ----------------------------------------------------------------------------
+# Fuzz the PATH of a request while authenticated with a LOW-privilege (member)
+# token. Each line is an admin/privileged path a member should NOT be able to
+# reach. Read the result as:
+#   401 / 403            -> function-level authz enforced (good)
+#   404                  -> route not found here (try the real admin path)
+#   200 + admin data/UI  -> BFLA finding: a member reached an admin function.
+#                           Record it and stop.
+#
+# IMPORTANT — stay read-only:
+#   - Only GET these. Do NOT point a member token at POST/PUT/DELETE versions of
+#     admin routes here — that could change data. Method-tampering is a separate,
+#     deliberate test (see note at the bottom), not part of this list.
+#   - These are GENERIC guesses. Replace / extend with the REAL admin API routes
+#     for your target (watch the network tab while using an admin account), e.g.
+#     the training-requirement admin, importers, and task-completion-manager
+#     backends. A path that doesn't exist just returns 404 and tells you nothing.
+#
+# Lines starting with "# " (or a lone #) are comments and are skipped.
+# ============================================================================
+
+# --- generic admin surfaces ---
+/admin
+/admin/users
+/admin/settings
+/admin/customers
+
+# --- user / tenant management (reading another scope) ---
+/users
+/users/all
+/customers
+/customers/all
+/accounts
+
+# --- privileged LMS-style functions (replace with real routes) ---
+/api/admin/trainingrequirements
+/api/admin/importers
+/api/admin/reports
+/api/admin/groups
+/api/admin/enrollments
+
+# --- config / audit / jobs (often admin-only) ---
+/api/config
+/api/audit
+/api/jobs
+/api/featureflags
+
+# ----------------------------------------------------------------------------
+# Related manual test — HTTP METHOD tampering (do by hand, carefully):
+#   Take a resource you CAN read (GET /ta/requirements/{id}) and, with your
+#   member token, try the same path with PUT / PATCH / DELETE. If a write verb
+#   is accepted (2xx) where a member shouldn't write, that's BFLA. Use a
+#   disposable record and confirm you can undo it before trying write verbs.
+# ----------------------------------------------------------------------------

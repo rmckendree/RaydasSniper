@@ -1,0 +1,45 @@
+# ============================================================================
+# AUTHENTICATION probes — bearer token / JWT  (non-destructive)
+# ----------------------------------------------------------------------------
+# Fuzz the BEARER TOKEN value (the {{token}} variable, or the value after
+# "Bearer " in the Authorization header). Each line is a token to try against a
+# normally-protected endpoint.
+#
+# The sample JWTs below are STRUCTURAL probes with a fake signature and a benign
+# payload (sub=FZcanary). A correctly-built API rejects every one of them. The
+# FINDING is the opposite:
+#   401 / 403            -> authN enforced (good — expected for all of these)
+#   200 WITH real data   -> BROKEN authentication. Record it and stop.
+# Pay special attention to the alg:none line (accepting it = classic JWT bypass)
+# and the tampered-role line (accepting it = signature not verified).
+#
+# Also test the two cases that aren't token *values* (do these by hand, since
+# they change the request shape, not the token string):
+#   - remove the Authorization header entirely
+#   - send the header with no scheme / no value
+# Lines starting with "# " (or a lone #) are comments and are skipped.
+# ============================================================================
+
+# obviously invalid / garbage
+FZcanary-not-a-token
+null
+undefined
+
+# malformed JWT (right shape, nonsense segments)
+eyJFWmNhbmFyeSI.eyJGWmNhbmFyeSI.FZcanary
+
+# alg:none JWT, role=admin, no signature  (accepting this = JWT 'none' bypass)
+eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzdWIiOiJGWmNhbmFyeSIsInJvbGUiOiJhZG1pbiIsImV4cCI6OTk5OTk5OTk5OX0.
+
+# HS256 JWT, role=admin, FAKE signature  (accepting this = signature not verified)
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJGWmNhbmFyeSIsInJvbGUiOiJhZG1pbiIsImV4cCI6OTk5OTk5OTk5OX0.RlpjYW5hcnktbm90LWEtcmVhbC1zaWduYXR1cmU
+
+# HS256 JWT, exp in the past  (accepting this = expiry not checked)
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJGWmNhbmFyeSIsInJvbGUiOiJ1c2VyIiwiZXhwIjoxfQ.RlpjYW5hcnktbm90LWEtcmVhbC1zaWduYXR1cmU
+
+# HS256 JWT, wrong audience  (accepting this = aud not validated)
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJGWmNhbmFyeSIsImF1ZCI6IkZaY2FuYXJ5LXdyb25nIiwiZXhwIjo5OTk5OTk5OTk5fQ.RlpjYW5hcnktbm90LWEtcmVhbC1zaWduYXR1cmU
+
+# a VALID token with trailing junk appended  (sloppy parsing check)
+# -> replace the leading part with a real token minted for the target, then keep the ".FZcanary"
+REPLACE_WITH_REAL_TOKEN.FZcanary
